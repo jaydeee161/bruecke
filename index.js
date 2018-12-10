@@ -1,108 +1,237 @@
-window.onload = function() {
-    const kategorien = {
-        getraenke:      "Getränke",
-        essen:          "Essen",
-        suessigkeiten:  "Süßigkeiten"
-    };    
-    const getraenke = {
-        fanta:          ["Fanta", 1.3],
-        cola:           ["Coca-Cola", 1.3],
-        sprite:         ["Sprite",1.3],
-        apfel:          ["Apfelsaftschorle",1.3],
-        wasser:         ["Wasser",0.8],
-        kaffee:         ["Kaffee",1.3],
-        topfit:         ["Top-Fit",1.3],
-        mezzomix:       ["Mezzo-Mix",1.3],
-        sonstiges:      ["Sonstiges"]
-    };    
-    const essen = {
-        salami:         ["Pizza Salami", 1.2],
-        margherita:     ["Pizza Margherita", 1.2],
-        sonstiges:      ["Sonstiges"]        
-    };
-    const suessigkeiten = {
-        oreo:           ["Oreo", 1],
-        lolli:          ["Lolli", 0.2],
-        centershock:    ["Center-Shock",0.1],
-        snickers:       ["Snickers",0.7],
-        twix:           ["Twix",0.7],
-        nicnacs:        ["Nic-Nacs",1],
-        kitkat:         ["Kit-Kat",0.7],
-        knoppers:       ["Knoppers",0.3],
-        eis:            ["Eis",0.3],
-        mundms:         ["M&M´s",0.7],
-        country:        ["Kinder Country",0.7],
-        kitkatchunky:   ["Kit-Kat Chunky",0.7],
-        sonstiges:      ["Sonstiges"]          
-    };
-    const warenkorb = {
-
-    };
-
-    const sessionButton = document.getElementById('wrapper__button');
-    const sectionKategorien = document.getElementById('kategorien');
-    const sectionProdukte = document.getElementById('produkte');
-    const containerGetraenke = sectionProdukte.querySelector('.getraenke');
-    const containerEssen = sectionProdukte.querySelector('.essen');
-    const containerSuessigkeiten = sectionProdukte.querySelector('.suessigkeiten');
-
-    for(let key in kategorien) {
-        let kategorieDiv = document.createElement('div');
-        let kategorieText = document.createTextNode(kategorien[key]);
-
-        kategorieDiv.appendChild(kategorieText);
-        kategorieDiv.addEventListener('click', function(event) {
-            chooseKategorie(event);
-        });
-        sectionKategorien.appendChild(kategorieDiv); 
-    }
-    
-    for(let key in getraenke) {
-        let getraenkeDiv = document.createElement('div');
-        let getraenkeText = document.createTextNode(getraenke[key][0]);
-
-        getraenkeDiv.appendChild(getraenkeText);
-        getraenkeDiv.addEventListener('click', function(event) {
-            addProduct(event);
-        });
-        containerGetraenke.appendChild(getraenkeDiv);
-
+window.onload = function () {
+    const categories = {
+        food: "Essen",
+        drinks: "Getränke",
+        snacks: "Süßigkeiten"
     }
 
-    for(let key in essen) {
-        let essenDiv = document.createElement('div');
-        let essenText = document.createTextNode(essen[key][0]);
-
-        essenDiv.appendChild(essenText);
-        essenDiv.addEventListener('click', function(event) {
-            addProduct(event);
-        });
-        containerEssen.appendChild(essenDiv);
+    const products = {
+        food: {
+            salami: ["Pizza Salami", 1.2],
+            margherita: ["Pizza Margherita", 1.2],
+            sonstiges: ["Sonstiges"]
+        },
+        drinks: {
+            fanta: ["Fanta", 1.3],
+            cola: ["Coca-Cola", 1.3],
+            sprite: ["Sprite", 1.3],
+            apfel: ["Apfelsaftschorle", 1.3],
+            wasser: ["Wasser", 0.8],
+            kaffee: ["Kaffee", 1.3],
+            topfit: ["Top-Fit", 1.3],
+            mezzomix: ["Mezzo-Mix", 1.3],
+            sonstiges: ["Sonstiges"]
+        },
+        snacks: {
+            oreo: ["Oreo", 1],
+            lolli: ["Lolli", 0.2],
+            centershock: ["Center-Shock", 0.1],
+            snickers: ["Snickers", 0.7],
+            twix: ["Twix", 0.7],
+            nicnacs: ["Nic-Nacs", 1],
+            kitkat: ["Kit-Kat", 0.7],
+            knoppers: ["Knoppers", 0.3],
+            eis: ["Eis", 0.3],
+            mundms: ["M&M´s", 0.7],
+            country: ["Kinder Country", 0.7],
+            kitkatchunky: ["Kit-Kat Chunky", 0.7],
+            sonstiges: ["Sonstiges"]
+        }
     }
 
-    for(let key in suessigkeiten) {
-        let suessigkeitenDiv = document.createElement('div');
-        let suessigkeitenText = document.createTextNode(suessigkeiten[key][0]);
+    const wrapper = document.getElementById('wrapper');
+    const welcomeArea = wrapper.querySelector('.wrapper__welcomeArea');
+    const categoriesContainer = wrapper.querySelector('.wrapper__categories');
+    const productsContainer = wrapper.querySelector('.wrapper__products');
+    const cartContainer = wrapper.querySelector('.wrapper__cart');
+    const checkoutContainer = wrapper.querySelector('.wrapper__checkout');
+    const checkoutPriceContainer = checkoutContainer.querySelector('.wrapper__checkout__price');
+    const checkoutRecievedContainer = checkoutContainer.querySelector('.wrapper__checkout__recievedMoney');
+    const checkoutRecievedInput = checkoutRecievedContainer.querySelector('.wrapper__checkout__recievedMoney__input');
+    const checkoutChangeContainer = checkoutContainer.querySelector('.wrapper__checkout__change');
 
-        suessigkeitenDiv.appendChild(suessigkeitenText);
-        suessigkeitenDiv.addEventListener('click', function(event) {
-            addProduct(event);
-        });
-        containerSuessigkeiten.appendChild(suessigkeitenDiv);
-    }
+    let welcomeButton = welcomeArea.querySelector('.wrapper__welcomeArea__button');
+    let wrapperHeader = welcomeArea.querySelector('h1');
 
-    sessionButton.addEventListener('click', function() {
-        sessionButton.classList.add('hide');
-        sectionKategorien.classList.remove('hide');
-        sectionKategorien.classList.add('show');
+    welcomeButton.addEventListener('click', function () {
+        changeDisplayFlex(welcomeButton);        
+        loadCategories();
+        showCategories();
+        loadProducts();
     });
 
-    function chooseKategorie(event) {
-        console.log(event.target);
+    checkoutRecievedInput.addEventListener('input', processRecieved);
 
+    function loadCategories() {
+        for (let key in categories) {
+            let categorieDiv = document.createElement('div');
+            let categorieText = document.createTextNode(categories[key]);
+
+            categorieDiv.appendChild(categorieText);
+            categorieDiv.addEventListener('click', toggleProducts);
+            categorieDiv.setAttribute('data-value', key);
+            categorieDiv.classList.add('hide', 'wrapper__categories__categorie');            
+            categoriesContainer.appendChild(categorieDiv);
+        }
     }
 
-    function addProduct(event) {
-        console.log(event.target);
+    function loadProducts() {
+        for (let key in products) {
+            let productBundle = products[key];
+            console.log(productBundle);
+            let newDiv = document.createElement('div');
+
+            newDiv.classList.add('hide', 'wrapper__products__' + key);
+            productsContainer.appendChild(newDiv);
+            for (let key2 in productBundle) {
+                let newDiv2 = document.createElement('div');
+                let newText2 = document.createTextNode(productBundle[key2][0]);
+
+                newDiv2.classList.add('wrapper__products__' + key + '__' + key2);
+                newDiv2.setAttribute('data-name', productBundle[key2][0]);
+                newDiv2.setAttribute('data-value', key2);
+                newDiv2.setAttribute('data-price', productBundle[key2][1]);
+                newDiv2.addEventListener('click', addToCart);
+                newDiv2.appendChild(newText2);
+                newDiv.appendChild(newDiv2);
+            }
+        }
+    }
+
+    function showCategories() {
+        let targetDivs = categoriesContainer.querySelectorAll('.wrapper__categories__categorie');
+        targetDivs.forEach(function (targetDiv) {
+            changeDisplayBlock(targetDiv);
+        });
+    }
+
+    function toggleProducts(event) {
+        let selectedCategorie = event.target.getAttribute('data-value');
+        for (let key in products) {
+            let productBundle = products[key];
+            if (key === selectedCategorie) {                                
+                let target = productsContainer.querySelector('.wrapper__products__' + key);
+                changeDisplayBlock(target)
+            }
+        }
+    }
+
+    function addToCart(event) {
+        let name = event.target.getAttribute('data-name');
+        let value = event.target.getAttribute('data-value');
+        let price = event.target.getAttribute('data-price');
+
+        let containerDiv = document.createElement('div');
+        let newDiv = document.createElement('div');
+        let newText = document.createTextNode(name);
+        let newDiv2 = document.createElement('div');
+        let newText2 = document.createTextNode(price);
+        let newDiv3 = document.createElement('div');
+        let newText3 = document.createTextNode('Remove');
+
+        newDiv.appendChild(newText);
+        newDiv2.appendChild(newText2);
+        newDiv3.appendChild(newText3);
+        newDiv3.addEventListener('click', removeCartItem);
+        containerDiv.setAttribute('cartItem-value', value);
+        containerDiv.setAttribute('cartItem-name', name);
+        containerDiv.setAttribute('cartItem-price', price);
+        containerDiv.classList.add('cartItem');
+        containerDiv.appendChild(newDiv);
+        containerDiv.appendChild(newDiv2);
+        containerDiv.appendChild(newDiv3);
+        cartContainer.appendChild(containerDiv);
+        changeDisplayFlex(cartContainer);
+        changeDisplayFlex(checkoutContainer);
+    }
+
+    let observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+            observer.disconnect();
+            updatePrice();
+        });
+    });
+    let config = { attributes: true, childList: true, characterData: true };
+    observer.observe(cartContainer, config);
+
+    let priceTotal;
+    function updatePrice() {
+        let cartItems = cartContainer.querySelectorAll('.cartItem');
+        priceTotal = 0;
+        cartItems.forEach(function (cartItem) {
+            let cartItemPrice = cartItem.getAttribute('cartItem-price');
+            priceTotal += parseFloat(cartItemPrice);
+        });
+
+        checkoutPriceContainer.textContent = priceTotal.toString();
+        observer.observe(cartContainer, config);
+    };
+
+    function removeCartItem(event) {
+        let target = event.target.parentElement;
+        cartContainer.removeChild(target);
+        if (cartContainer.children.length = 0) {
+            changeDisplayFlex(cartContainer);            
+            changeDisplayFlex(checkoutContainer);
+        }
+        
+    };
+
+    let receivedEuro;
+    let receivedCent;
+    function processRecieved(event) {
+        let inputString = event.target.value;
+        receivedEuro = 0;
+        receivedCent = 0;
+        resultString = inputString.replace(/\D/g, '');
+        resultStringLength = resultString.length;
+        if (resultStringLength >= 3) {
+            receivedCent = resultString.substr(resultStringLength - 2);
+            let resultStringCents = '.' + receivedCent;
+            resultString = resultString.slice(0, resultStringLength - 2);
+            receivedEuro = resultString;
+            resultString += resultStringCents;
+        } else {
+            receivedEuro = resultString;
+        }
+        event.target.value = resultString;
+        processChange();
+    }
+
+    function processChange() {
+        let receivedMoneyString = '';
+        let euro = parseInt(receivedEuro);
+        let cent = parseInt(receivedCent);
+        if (receivedCent === 0 && receivedEuro != 0) {
+            receivedMoneyString = euro;
+        } else if (receivedCent != 0 && receivedEuro === 0) {
+            receivedMoneyString = cent;
+        } else {
+            receivedMoneyString = receivedEuro + '.' + receivedCent;
+        }
+        let receivedMoney = parseFloat(receivedMoneyString);
+        let changePrice =  receivedMoney - priceTotal;
+        changePrice = changePrice.toFixed(2);
+        checkoutChangeContainer.textContent = changePrice;
+    }
+
+    function changeDisplayFlex(element) {
+        if (element.classList.contains('hide')) {
+            element.classList.remove('hide');
+            element.classList.add('flex');
+        } else {
+            element.classList.remove('flex');
+            element.classList.add('hide');
+        }
+    }
+
+    function changeDisplayBlock(element) {
+        if (element.classList.contains('hide')) {
+            element.classList.remove('hide');
+            element.classList.add('block');
+        } else {
+            element.classList.remove('block');
+            element.classList.add('hide');
+        }
     }
 }
