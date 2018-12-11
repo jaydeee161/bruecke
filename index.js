@@ -54,7 +54,7 @@ window.onload = function () {
     let wrapperHeader = welcomeArea.querySelector('h1');
 
     welcomeButton.addEventListener('click', function () {
-        changeDisplayFlex(welcomeButton);        
+        changeDisplay(welcomeButton);
         loadCategories();
         showCategories();
         loadProducts();
@@ -101,17 +101,19 @@ window.onload = function () {
     function showCategories() {
         let targetDivs = categoriesContainer.querySelectorAll('.wrapper__categories__categorie');
         targetDivs.forEach(function (targetDiv) {
-            changeDisplayBlock(targetDiv);
+            changeDisplay(targetDiv, 'block');            
         });
     }
 
     function toggleProducts(event) {
         let selectedCategorie = event.target.getAttribute('data-value');
+        let target;
         for (let key in products) {
-            let productBundle = products[key];
-            if (key === selectedCategorie) {                                
-                let target = productsContainer.querySelector('.wrapper__products__' + key);
-                changeDisplayBlock(target)
+            target = productsContainer.querySelector('.wrapper__products__' + key);
+            if (key === selectedCategorie) {                
+                changeDisplay(target, 'toggleBlock');
+            } else {
+                changeDisplay(target);
             }
         }
     }
@@ -141,8 +143,8 @@ window.onload = function () {
         containerDiv.appendChild(newDiv2);
         containerDiv.appendChild(newDiv3);
         cartContainer.appendChild(containerDiv);
-        changeDisplayFlex(cartContainer);
-        changeDisplayFlex(checkoutContainer);
+        changeDisplay(cartContainer, 'flex', true);
+        changeDisplay(checkoutContainer, 'flex', true);
     }
 
     let observer = new MutationObserver(function (mutations) {
@@ -170,9 +172,9 @@ window.onload = function () {
     function removeCartItem(event) {
         let target = event.target.parentElement;
         cartContainer.removeChild(target);
-        if (cartContainer.children.length = 0) {
-            changeDisplayFlex(cartContainer);            
-            changeDisplayFlex(checkoutContainer);
+        if (cartContainer.children.length === 0) {
+            changeDisplay(cartContainer);
+            changeDisplay(checkoutContainer);
         }
         
     };
@@ -215,23 +217,57 @@ window.onload = function () {
         checkoutChangeContainer.textContent = changePrice;
     }
 
-    function changeDisplayFlex(element) {
-        if (element.classList.contains('hide')) {
-            element.classList.remove('hide');
-            element.classList.add('flex');
+    //new Display Toggle Function
+    //element = target DOM element
+    //displayType = 'flex' or 'block' or 'toggleFlex' or 'toggleBlock'
+    //onlyShow = boolean
+    function changeDisplay (element, displayType, onlyShow) {
+        if (onlyShow) {
+            removeHide(element);
+            addDisplay(element, displayType);
+        } else if (displayType === 'flex') {
+            removeHide(element)
+            addDisplay(element, displayType);
+        } else if (displayType === 'block') {
+            removeHide(element);
+            addDisplay(element, displayType);
+        } else if (displayType === 'toggleFlex' || displayType === 'toggleBlock') {
+            toggleDisplay(element, displayType);
         } else {
-            element.classList.remove('flex');
-            element.classList.add('hide');
-        }
+            removeDisplay(element, displayType);
+            addHide(element);
+        }        
     }
 
-    function changeDisplayBlock(element) {
-        if (element.classList.contains('hide')) {
-            element.classList.remove('hide');
-            element.classList.add('block');
+    function removeHide(element) {
+        element.classList.remove('hide');
+    }
+
+    function addHide(element) {
+        element.classList.add('hide');
+    }
+
+    function addDisplay(element, displayType) {
+        element.classList.add(displayType);
+    }
+
+    function removeDisplay(element, displayType) {
+        element.classList.remove(displayType);
+    }
+
+    function toggleDisplay(element, displayType) {
+        let display = '';
+        if (displayType === 'toggleFlex') {
+            display = 'flex';
         } else {
-            element.classList.remove('block');
-            element.classList.add('hide');
+            display = 'block';
+        }
+        if (element.classList.contains('hide')) {
+            removeHide(element);
+            addDisplay(element, display);
+        } else {
+            removeDisplay(element, display);
+            addHide(element);
         }
     }
 }
