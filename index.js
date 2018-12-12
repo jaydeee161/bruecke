@@ -39,28 +39,41 @@ window.onload = function () {
         }
     }
 
+    
+    const body = document.querySelector('body');
+
     const wrapper = document.getElementById('wrapper');
+
     const welcomeArea = wrapper.querySelector('.wrapper__welcomeArea');
+    const welcomeButton = welcomeArea.querySelector('.wrapper__welcomeArea__button');
+    const wrapperHeader = welcomeArea.querySelector('h1');
+
     const categoriesContainer = wrapper.querySelector('.wrapper__categories');
     const productsContainer = wrapper.querySelector('.wrapper__products');
     const cartContainer = wrapper.querySelector('.wrapper__cart');
-    const checkoutContainer = wrapper.querySelector('.wrapper__checkout');
+
+    const checkoutContainer = wrapper.querySelector('.wrapper__checkout');    
     const checkoutPriceContainer = checkoutContainer.querySelector('.wrapper__checkout__price');
     const checkoutRecievedContainer = checkoutContainer.querySelector('.wrapper__checkout__recievedMoney');
     const checkoutRecievedInput = checkoutRecievedContainer.querySelector('.wrapper__checkout__recievedMoney__input');
     const checkoutChangeContainer = checkoutContainer.querySelector('.wrapper__checkout__change');
 
-    let welcomeButton = welcomeArea.querySelector('.wrapper__welcomeArea__button');
-    let wrapperHeader = welcomeArea.querySelector('h1');
+    const navigationContainer = document.querySelector('#navigation');
+    const navigationRestart = navigationContainer.querySelector('.navigation__restart');
+
+
+    
 
     welcomeButton.addEventListener('click', function () {
-        changeDisplayFlex(welcomeButton);        
+        changeDisplay(welcomeButton);
         loadCategories();
         showCategories();
         loadProducts();
     });
 
     checkoutRecievedInput.addEventListener('input', processRecieved);
+
+    navigationRestart.addEventListener('click', restartSession);
 
     function loadCategories() {
         for (let key in categories) {
@@ -81,7 +94,7 @@ window.onload = function () {
             console.log(productBundle);
             let newDiv = document.createElement('div');
 
-            newDiv.classList.add('hide', 'wrapper__products__' + key);
+            newDiv.classList.add('hide', 'wrapper__products__' + key, 'wrapper__products__productCategories'); 
             productsContainer.appendChild(newDiv);
             for (let key2 in productBundle) {
                 let newDiv2 = document.createElement('div');
@@ -101,17 +114,19 @@ window.onload = function () {
     function showCategories() {
         let targetDivs = categoriesContainer.querySelectorAll('.wrapper__categories__categorie');
         targetDivs.forEach(function (targetDiv) {
-            changeDisplayBlock(targetDiv);
+            changeDisplay(targetDiv, 'block');            
         });
     }
 
     function toggleProducts(event) {
         let selectedCategorie = event.target.getAttribute('data-value');
+        let target;
         for (let key in products) {
-            let productBundle = products[key];
-            if (key === selectedCategorie) {                                
-                let target = productsContainer.querySelector('.wrapper__products__' + key);
-                changeDisplayBlock(target)
+            target = productsContainer.querySelector('.wrapper__products__' + key);
+            if (key === selectedCategorie) {                
+                changeDisplay(target, 'toggleBlock');
+            } else {
+                changeDisplay(target);
             }
         }
     }
@@ -141,8 +156,8 @@ window.onload = function () {
         containerDiv.appendChild(newDiv2);
         containerDiv.appendChild(newDiv3);
         cartContainer.appendChild(containerDiv);
-        changeDisplayFlex(cartContainer);
-        changeDisplayFlex(checkoutContainer);
+        changeDisplay(cartContainer, 'flex', true);
+        changeDisplay(checkoutContainer, 'flex', true);
     }
 
     let observer = new MutationObserver(function (mutations) {
@@ -170,9 +185,9 @@ window.onload = function () {
     function removeCartItem(event) {
         let target = event.target.parentElement;
         cartContainer.removeChild(target);
-        if (cartContainer.children.length = 0) {
-            changeDisplayFlex(cartContainer);            
-            changeDisplayFlex(checkoutContainer);
+        if (cartContainer.children.length === 0) {
+            changeDisplay(cartContainer);
+            changeDisplay(checkoutContainer);
         }
         
     };
@@ -215,23 +230,117 @@ window.onload = function () {
         checkoutChangeContainer.textContent = changePrice;
     }
 
-    function changeDisplayFlex(element) {
-        if (element.classList.contains('hide')) {
-            element.classList.remove('hide');
-            element.classList.add('flex');
+    //new Display Toggle Function
+    //element = target DOM element
+    //displayType = 'flex' or 'block' or 'toggleFlex' or 'toggleBlock'
+    //onlyShow = boolean
+    function changeDisplay (element, displayType, onlyShow) {
+        if (onlyShow) {
+            removeHide(element);
+            addDisplay(element, displayType);
+        } else if (displayType === 'flex') {
+            removeHide(element)
+            addDisplay(element, displayType);
+        } else if (displayType === 'block') {
+            removeHide(element);
+            addDisplay(element, displayType);
+        } else if (displayType === 'toggleFlex' || displayType === 'toggleBlock') {
+            toggleDisplay(element, displayType);
         } else {
-            element.classList.remove('flex');
-            element.classList.add('hide');
+            removeDisplay(element, displayType);
+            addHide(element);
+        }        
+    }
+
+    function removeHide(element) {
+        element.classList.remove('hide');
+    }
+
+    function addHide(element) {
+        element.classList.add('hide');
+    }
+
+    function addDisplay(element, displayType) {
+        element.classList.add(displayType);
+    }
+
+    function removeDisplay(element, displayType) {
+        element.classList.remove(displayType);
+    }
+
+    function toggleDisplay(element, displayType) {
+        let display = '';
+        if (displayType === 'toggleFlex') {
+            display = 'flex';
+        } else {
+            display = 'block';
+        }
+        if (element.classList.contains('hide')) {
+            removeHide(element);
+            addDisplay(element, display);
+        } else {
+            removeDisplay(element, display);
+            addHide(element);
         }
     }
 
-    function changeDisplayBlock(element) {
+    function isVisible(element) {
         if (element.classList.contains('hide')) {
-            element.classList.remove('hide');
-            element.classList.add('block');
+            return false;
         } else {
-            element.classList.remove('block');
-            element.classList.add('hide');
+            return true;
+        }
+    }
+
+    function restartSession() {
+        if (isVisible(welcomeButton)) {
+            return;
+        } else {
+            let modalBackground = document.createElement('div');
+            let modalContainer = document.createElement('div');
+            let modalHeader = document.createElement('div');
+            let modalContent = document.createElement('div');
+            let modalButton = document.createElement('button');
+            let modalContentText = document.createTextNode('Are you sure you want to restart the session?');
+            let modalButtonText = document.createTextNode('yes');
+
+            modalBackground.classList.add('modalBackground', 'block');
+            modalContainer.classList.add('modal');            
+            modalHeader.classList.add('modal__header');
+            modalContent.classList.add('modal__content');
+            modalButton.classList.add('modal__content__button');
+
+            modalBackground.addEventListener('click', closeModal);
+            //modalHeader.addEventListener('click', closeModal);
+            modalButton.addEventListener('click', reloadPage);
+
+            modalContent.appendChild(modalContentText);
+            modalButton.appendChild(modalButtonText);            
+            modalContent.appendChild(modalButton);            
+            modalContainer.appendChild(modalHeader);          
+            modalContainer.appendChild(modalContent);
+            modalBackground.appendChild(modalContainer);
+
+            body.appendChild(modalBackground);
+        }
+    }
+
+    function reloadPage() {
+        location.reload();
+    }
+
+    function closeModal(event) {
+        let modalBackground = document.querySelector('.modalBackground');
+        let modalContainer = modalBackground.querySelector('.modal');
+        let modalHeader = modalBackground.querySelector('.modal__header');
+        let modalContent = modalBackground.querySelector('.modal__content');
+        let modalButton = modalBackground.querySelector('.modal__content__button');
+        if (isVisible(modalBackground)) {
+            if (event.target != modalContainer && event.target != modalHeader && event.target != modalButton && event.target != modalContent) {                
+                body.removeChild(modalBackground);
+            }            
+        } else {
+            console.log('%cError while closing modal! Please contact developer', 'background: orange; color: black');
         }
     }
 }
