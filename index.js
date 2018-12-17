@@ -46,7 +46,9 @@ window.onload = function () {
 
     const welcomeArea = wrapper.querySelector('.wrapper__welcomeArea');
     const welcomeButton = welcomeArea.querySelector('.wrapper__welcomeArea__button');
-    const wrapperHeader = welcomeArea.querySelector('h1');
+    const wrapperHeaderKassen = welcomeArea.querySelector('.wrapper__h1__kassen');
+    const wrapperHeaderSystem = welcomeArea.querySelector('.wrapper__h1__system');
+    const wrapperHeaderSmall = welcomeArea.querySelector('.wrapper__header__small')
 
     const categoriesContainer = wrapper.querySelector('.wrapper__categories');
     const productsContainer = wrapper.querySelector('.wrapper__products');
@@ -66,6 +68,9 @@ window.onload = function () {
 
     welcomeButton.addEventListener('click', function () {
         changeDisplay(welcomeButton);
+        changeDisplay(wrapperHeaderKassen);
+        changeDisplay(wrapperHeaderSystem);
+        changeDisplay(wrapperHeaderSmall, 'block');
         loadCategories();
         showCategories();
         loadProducts();
@@ -83,15 +88,16 @@ window.onload = function () {
             categorieDiv.appendChild(categorieText);
             categorieDiv.addEventListener('click', toggleProducts);
             categorieDiv.setAttribute('data-value', key);
+            categorieDiv.setAttribute('data-selected', "false");            
             categorieDiv.classList.add('hide', 'wrapper__categories__categorie');            
             categoriesContainer.appendChild(categorieDiv);
+            addClass(categoriesContainer, 'wrapper__categories__spaceEvenly');
         }
     }
 
     function loadProducts() {
         for (let key in products) {
             let productBundle = products[key];
-            console.log(productBundle);
             let newDiv = document.createElement('div');
 
             newDiv.classList.add('hide', 'wrapper__products__' + key, 'wrapper__products__productCategories'); 
@@ -108,7 +114,7 @@ window.onload = function () {
                 newDiv2.appendChild(newText2);
                 newDiv.appendChild(newDiv2);
             }
-        }
+        }        
     }
 
     function showCategories() {
@@ -122,13 +128,43 @@ window.onload = function () {
         let selectedCategorie = event.target.getAttribute('data-value');
         let target;
         for (let key in products) {
-            target = productsContainer.querySelector('.wrapper__products__' + key);
+            target = productsContainer.querySelector('.wrapper__products__' + key);            
             if (key === selectedCategorie) {                
-                changeDisplay(target, 'toggleBlock');
+                changeDisplay(target, 'toggleFlex');
+                categorieValue = key;
             } else {
                 changeDisplay(target);
             }
         }
+        let targetSelected = event.target.getAttribute('data-selected');
+        let categories = categoriesContainer.querySelectorAll('.wrapper__categories__categorie'); 
+        if (targetSelected === "true") {
+            event.target.setAttribute('data-selected', "false");                                   
+        } else {
+            event.target.setAttribute('data-selected', "true");
+            removeClass(event.target.parentElement, 'wrapper__categories__spaceEvenly');
+            addClass(event.target.parentElement, 'categorieSelected');
+            addClass(event.target, 'clicked');
+            event.target.addEventListener('click', displayAllCategoriesAgain);                   
+            categories.forEach(function (categorie) {
+                if (categorie.getAttribute('data-selected') === "false") {
+                    changeDisplay(categorie);                                    
+                }            
+            });
+        }        
+    }
+
+    function displayAllCategoriesAgain(event) {
+        addClass(event.target.parentElement, 'wrapper__categories__spaceEvenly');
+        removeClass(event.target, 'clicked');
+        removeClass(event.target.parentElement, 'categorieSelected');
+        let categories = categoriesContainer.querySelectorAll('.wrapper__categories__categorie');
+        categories.forEach(function (categorie) {
+            if (!isVisible(categorie)) {
+                changeDisplay(categorie, 'block');
+            }
+        });
+        event.target.removeEventListener('click', displayAllCategoriesAgain);
     }
 
     function addToCart(event) {
@@ -158,16 +194,16 @@ window.onload = function () {
         cartContainer.appendChild(containerDiv);
         changeDisplay(cartContainer, 'flex', true);
         changeDisplay(checkoutContainer, 'flex', true);
-    }
+    }    
 
-    let observer = new MutationObserver(function (mutations) {
+    let observerPrice = new MutationObserver(function (mutations) {
         mutations.forEach(function (mutation) {
-            observer.disconnect();
+            observerPrice.disconnect();
             updatePrice();
         });
     });
-    let config = { attributes: true, childList: true, characterData: true };
-    observer.observe(cartContainer, config);
+    let observerPriceConfig = { attributes: true, childList: true, characterData: true };
+    observerPrice.observe(cartContainer, observerPriceConfig);    
 
     let priceTotal;
     function updatePrice() {
@@ -179,7 +215,7 @@ window.onload = function () {
         });
 
         checkoutPriceContainer.textContent = priceTotal.toString();
-        observer.observe(cartContainer, config);
+        observerPrice.observe(cartContainer, observerPriceConfig);
     };
 
     function removeCartItem(event) {
@@ -292,6 +328,14 @@ window.onload = function () {
         }
     }
 
+    function addClass(element, className) {
+        element.classList.add(className);
+    }
+
+    function removeClass(element, className) {
+        element.classList.remove(className);
+    }
+
     function restartSession() {
         if (isVisible(welcomeButton)) {
             return;
@@ -302,7 +346,7 @@ window.onload = function () {
             let modalContent = document.createElement('div');
             let modalButton = document.createElement('button');
             let modalContentText = document.createTextNode('Are you sure you want to restart the session?');
-            let modalButtonText = document.createTextNode('yes');
+            let modalButtonText = document.createTextNode('Yes');
 
             modalBackground.classList.add('modalBackground', 'block');
             modalContainer.classList.add('modal');            
@@ -316,9 +360,9 @@ window.onload = function () {
 
             modalContent.appendChild(modalContentText);
             modalButton.appendChild(modalButtonText);            
-            modalContent.appendChild(modalButton);            
             modalContainer.appendChild(modalHeader);          
-            modalContainer.appendChild(modalContent);
+            modalContainer.appendChild(modalContent);                       
+            modalContainer.appendChild(modalButton); 
             modalBackground.appendChild(modalContainer);
 
             body.appendChild(modalBackground);
@@ -344,3 +388,18 @@ window.onload = function () {
         }
     }
 }
+
+/* todo:
+select products -> checkout invisible
+checkout button becomes visible -> onclick -> new site with checkout (containing price and other stuff) 
+After Checkout -> Button to Categories
+"Custom Keyboard ( Only Numbers)"
+
+
+
+welcomearea -> restart & back need to be invisible
+
+back -> functionality needs to be implemented (s1ck l0g1c n33d3d, y4 y3333333333333333333333333333333T)
+
+product images -> need to be set to product backgrounds
+*/
