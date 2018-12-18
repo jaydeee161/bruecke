@@ -9,7 +9,7 @@ window.onload = function () {
         food: {
             salami: ["Pizza Salami", 1.2],
             margherita: ["Pizza Margherita", 1.2],
-            sonstiges: ["Sonstiges"]
+            sonstiges: ["Sonstiges", 1.2]
         },
         drinks: {
             fanta: ["Fanta", 1.3],
@@ -17,10 +17,10 @@ window.onload = function () {
             sprite: ["Sprite", 1.3],
             apfel: ["Apfelsaftschorle", 1.3],
             wasser: ["Wasser", 0.8],
-            kaffee: ["Kaffee", 1.3],
+            kaffee: ["Kaffee", 0.3],
             topfit: ["Top-Fit", 1.3],
             mezzomix: ["Mezzo-Mix", 1.3],
-            sonstiges: ["Sonstiges"]
+            sonstiges: ["Sonstiges", 1.3]
         },
         snacks: {
             oreo: ["Oreo", 1],
@@ -35,7 +35,9 @@ window.onload = function () {
             mundms: ["M&M´s", 0.7],
             country: ["Kinder Country", 0.7],
             kitkatchunky: ["Kit-Kat Chunky", 0.7],
-            sonstiges: ["Sonstiges"]
+            sonstiges30: ["Sonstiges", 0.3],
+            sonstiges50: ["Sonstiges", 0.5],
+            sonstiges70: ["Sonstiges", 0.7]
         }
     }
 
@@ -53,7 +55,7 @@ window.onload = function () {
     const categoriesContainer = wrapper.querySelector('.wrapper__categories');
     const productsContainer = wrapper.querySelector('.wrapper__products');
     const cartContainer = wrapper.querySelector('.wrapper__cart');
-
+    
     const checkoutContainer = wrapper.querySelector('.wrapper__checkout');    
     const checkoutPriceContainer = checkoutContainer.querySelector('.wrapper__checkout__price');
     const checkoutRecievedContainer = checkoutContainer.querySelector('.wrapper__checkout__recievedMoney');
@@ -62,6 +64,7 @@ window.onload = function () {
 
     const navigationContainer = document.querySelector('#navigation');
     const navigationRestart = navigationContainer.querySelector('.navigation__restart');
+    const navigationGoToCheckout = navigationContainer.querySelector('.navigation__goToCheckout');
 
 
     
@@ -77,8 +80,8 @@ window.onload = function () {
     });
 
     checkoutRecievedInput.addEventListener('input', processRecieved);
-
     navigationRestart.addEventListener('click', restartSession);
+    navigationGoToCheckout.addEventListener('click', goToCheckout);
 
     function loadCategories() {
         for (let key in categories) {
@@ -104,14 +107,16 @@ window.onload = function () {
             productsContainer.appendChild(newDiv);
             for (let key2 in productBundle) {
                 let newDiv2 = document.createElement('div');
-                let newText2 = document.createTextNode(productBundle[key2][0]);
+                //let newText2 = document.createTextNode(productBundle[key2][0]);                
 
+                newDiv2.style.backgroundImage = ('url(/images/' + key2 + '.png)');
+                newDiv2.classList.add('wrapper__products--backgroundStyle');                
                 newDiv2.classList.add('wrapper__products__' + key + '__' + key2);
                 newDiv2.setAttribute('data-name', productBundle[key2][0]);
                 newDiv2.setAttribute('data-value', key2);
                 newDiv2.setAttribute('data-price', productBundle[key2][1]);
                 newDiv2.addEventListener('click', addToCart);
-                newDiv2.appendChild(newText2);
+                //newDiv2.appendChild(newText2);
                 newDiv.appendChild(newDiv2);
             }
         }        
@@ -193,7 +198,7 @@ window.onload = function () {
         containerDiv.appendChild(newDiv3);
         cartContainer.appendChild(containerDiv);
         changeDisplay(cartContainer, 'flex', true);
-        changeDisplay(checkoutContainer, 'flex', true);
+        removeClass(navigationGoToCheckout, 'disabled');
     }    
 
     let observerPrice = new MutationObserver(function (mutations) {
@@ -211,10 +216,10 @@ window.onload = function () {
         priceTotal = 0;
         cartItems.forEach(function (cartItem) {
             let cartItemPrice = cartItem.getAttribute('cartItem-price');
-            priceTotal += parseFloat(cartItemPrice);
+            priceTotal += parseFloat(cartItemPrice);        
         });
 
-        checkoutPriceContainer.textContent = priceTotal.toString();
+        checkoutPriceContainer.textContent = priceTotal.toFixed(2);
         observerPrice.observe(cartContainer, observerPriceConfig);
     };
 
@@ -224,6 +229,7 @@ window.onload = function () {
         if (cartContainer.children.length === 0) {
             changeDisplay(cartContainer);
             changeDisplay(checkoutContainer);
+            addClass(navigationGoToCheckout, 'disabled');
         }
         
     };
@@ -262,8 +268,12 @@ window.onload = function () {
         }
         let receivedMoney = parseFloat(receivedMoneyString);
         let changePrice =  receivedMoney - priceTotal;
-        changePrice = changePrice.toFixed(2);
-        checkoutChangeContainer.textContent = changePrice;
+        if (changePrice < 0) {
+            checkoutChangeContainer.textContent = '';
+        } else {            
+            changePrice = changePrice.toFixed(2);
+            checkoutChangeContainer.textContent = changePrice;
+        }
     }
 
     //new Display Toggle Function
@@ -387,7 +397,26 @@ window.onload = function () {
             console.log('%cError while closing modal! Please contact developer', 'background: orange; color: black');
         }
     }
+
+    function goToCheckout() {
+        changeDisplay(categoriesContainer);        
+        changeDisplay(productsContainer);
+        changeDisplay(cartContainer);
+        changeDisplay(checkoutContainer, 'flex');  
+        navigationGoToCheckout.removeEventListener('click', goToCheckout);
+        navigationGoToCheckout.addEventListener('click', continueShopping);
+    }
+
+    function continueShopping() {
+        changeDisplay(categoriesContainer, 'flex');        
+        changeDisplay(productsContainer, 'block');
+        changeDisplay(cartContainer, 'flex');
+        changeDisplay(checkoutContainer);
+        navigationGoToCheckout.removeEventListener('click', continueShopping);
+        navigationGoToCheckout.addEventListener('click', goToCheckout);
+    }
 }
+
 
 /* todo:
 select products -> checkout invisible
@@ -401,5 +430,15 @@ welcomearea -> restart & back need to be invisible
 
 back -> functionality needs to be implemented (s1ck l0g1c n33d3d, y4 y3333333333333333333333333333333T)
 
-product images -> need to be set to product backgrounds
+Einnahme Gesamt session --> abzüglich pfand ( gesamt - anzahl verkaufter getränke x 0.30 )
+
+
+
+
+
+3x Pizza MargescurrRta (-)
+32x Pizza Selemi (-)
+4 x Cela-kok5a (-)
+
+
 */
